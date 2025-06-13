@@ -85,8 +85,6 @@ fn setup(mut commands: Commands, hud: Res<Hud>) {
  commands.entity(hud.0).with_children(|parent| {
        parent
             .spawn((
-                RenderLayers::layer(2),
-                OnSplashScreen,
                 Node {
                     width: Val::Percent(100.0),
                     top: Val::Percent(10.0),
