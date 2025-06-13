@@ -1,7 +1,55 @@
+//! A Bevy plugin that enforces a fixed virtual resolution with dynamic letterboxing and UI scaling.
+//!
+//! Add `AspectRatioPlugin` to your app, and use the injected `Hud` resource to spawn your UI.
+//! Requires a `Camera2dBundle` with `ScalingMode::AutoMin`.
+//!
+//! ---
+//!
+//! ### Example
+//!
+//! ```rust
+//! use bevy::prelude::*;
+//! use bevy_aspect_ratio_mask::{AspectRatioPlugin, Hud};
+//!
+//! fn main() {
+//!     App::new()
+//!         .add_plugins(DefaultPlugins)
+//!         .add_plugins(AspectRatioPlugin::default())
+//!         .add_systems(Startup, setup)
+//!         .run();
+//! }
+//!
+//! fn setup(mut commands: Commands, hud: Res<Hud>) {
+//!     commands.entity(hud.0).with_children(|parent| {
+//!         parent
+//!             .spawn((
+//!                 Node {
+//!                     width: Val::Percent(100.0),
+//!                     top: Val::Percent(10.0),
+//!                     position_type: PositionType::Absolute,
+//!                     justify_content: JustifyContent::Center,
+//!                     ..default()
+//!                 },
+//!             ))
+//!             .with_children(|p| {
+//!                 p.spawn(Text {
+//!                     sections: vec![TextSection::new("Hello", TextStyle::default())],
+//!                     ..default()
+//!                 });
+//!             });
+//!     });
+//! }
+//! ```
 use bevy::color::palettes::tailwind::GRAY_950;
 use bevy::prelude::*;
 
+/// A Bevy plugin that enforces a fixed virtual resolution with black bar masking and UI scaling.
+///
+/// This plugin centers and scales all UI content while hiding out-of-bounds regions
+/// using dynamically positioned black bars. It works best with a 2D camera using
+/// `ScalingMode::AutoMin`.
 pub struct AspectRatioPlugin {
+    /// The target virtual resolution (default is 960×540).
     pub resolution: Resolution,
 }
 
@@ -20,9 +68,15 @@ impl Plugin for AspectRatioPlugin {
     }
 }
 
+/// The virtual resolution used to maintain a consistent aspect ratio.
+///
+/// This should match your game's design resolution. If the window doesn't
+/// match this ratio, the crate will apply letterboxing and UI scaling automatically.
 #[derive(Resource, Clone, Copy)]
 pub struct Resolution {
+    /// The target width of the virtual resolution.
     pub width: f32,
+    /// The target height of the virtual resolution.
     pub height: f32,
 }
 
@@ -35,20 +89,34 @@ impl Default for Resolution {
     }
 }
 
+/// Marker component for the UI node that defines the HUD's layout space.
+///
+/// Any entities spawned as children of this node will scale and center relative
+/// to the defined virtual resolution.
 #[derive(Component)]
-pub struct AspectRatioHud;
+struct AspectRatioHud;
 
+/// Enum identifying one of the four aspect ratio masking regions.
+///
+/// These are spawned automatically as dark overlays ("black bars") to hide
+/// any extra viewport space when the window aspect ratio deviates.
 #[derive(Component)]
-pub enum AspectRatioMask {
+enum AspectRatioMask {
     Left,
     Right,
     Top,
     Bottom,
 }
 
+/// Resource pointing to the root `Entity` of the aspect-ratio-scaled HUD.
+///
+/// Use `hud.0` in a system to spawn child nodes that auto-scale and stay centered.
 #[derive(Resource)]
 pub struct Hud(pub Entity);
 
+/// Adds all internal systems for applying aspect ratio masking and UI scaling.
+///
+/// This is automatically invoked via `AspectRatioPlugin`—you generally don't call this yourself.
 fn plugin(app: &mut App) {
     app.add_systems(Startup, setup);
 
@@ -70,7 +138,10 @@ fn setup(mut commands: Commands, resolution: Res<Resolution>) {
     commands.insert_resource(Hud(hud));
 }
 
-pub fn aspect_ratio_hud_scaler(
+/// Updates UI margins and black bars when the window is resized.
+///
+/// Called only when a `WindowResized` event occurs.
+fn aspect_ratio_hud_scaler(
     windows: Query<&Window>,
     resolution: Res<Resolution>,
     mut ui_scale: ResMut<UiScale>,
@@ -127,7 +198,10 @@ pub fn aspect_ratio_hud_scaler(
     ui_scale.0 = min_scale;
 }
 
-pub fn aspect_ratio_hud_parent() -> impl Bundle {
+/// Spawns a 100% sized container node for holding HUD content.
+///
+/// This node remains centered and scaled using the aspect ratio logic.
+fn aspect_ratio_hud_parent() -> impl Bundle {
     (
         Name::new("Aspect Ratio Hud Parent"),
         Node {
@@ -140,7 +214,10 @@ pub fn aspect_ratio_hud_parent() -> impl Bundle {
     )
 }
 
-pub fn aspect_ratio_hud(resolution: Res<Resolution>) -> impl Bundle {
+/// Creates a HUD node with fixed pixel dimensions based on the configured resolution.
+///
+/// This should be added as a child of the parent node returned by `aspect_ratio_hud_parent()`.
+fn aspect_ratio_hud(resolution: Res<Resolution>) -> impl Bundle {
     (
         Name::new("Aspect Ratio Hud"),
         AspectRatioHud,
@@ -154,7 +231,10 @@ pub fn aspect_ratio_hud(resolution: Res<Resolution>) -> impl Bundle {
     )
 }
 
-pub fn aspect_ratio_mask() -> impl Bundle {
+/// Spawns four masking nodes that surround the viewport to simulate black bars.
+///
+/// These are automatically sized based on the window and resolution mismatch.
+fn aspect_ratio_mask() -> impl Bundle {
     (
         aspect_ratio_hud_parent(),
         children![
