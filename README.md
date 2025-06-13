@@ -14,6 +14,16 @@ A lightweight Bevy plugin that maintains a fixed virtual resolution across all s
 
 ---
 
+## Compatibility
+
+| bevy_aspect_ratio_mask | Bevy Version |
+|-|-|
+| 0.1.0 | 0.16.x |
+
+> This crate currently supports **Bevy 0.16**. Compatibility with future Bevy versions will follow stable releases as needed.
+
+---
+
 ## Getting Started
 
 ### 1. Add the crate
