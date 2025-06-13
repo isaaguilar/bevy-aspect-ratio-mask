@@ -1,7 +1,14 @@
 [package]
-name = "bevy-aspect-ratio-mask"
+name = "bevy_aspect_ratio_mask"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+authors = ["Isa Aguilar <isa@aguilarstory.com>"]
+description = "A Bevy plugin for fixed aspect ratios, letterboxing, and UI scaling in 2D games"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/isaaguilar/bevy-aspect-ratio-mask"
+keywords = ["bevy", "aspect-ratio", "viewport", "2d", "ui"]
+categories = ["game-engines", "graphics", "gui"]
+readme = "README.md"
 
 [dependencies]
 bevy = "0.16.1"
