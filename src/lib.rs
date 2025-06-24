@@ -51,20 +51,42 @@ use bevy::prelude::*;
 pub struct AspectRatioPlugin {
     /// The target virtual resolution (default is 960×540).
     pub resolution: Resolution,
+    pub mask: AspectRatioMask,
 }
 
 impl Default for AspectRatioPlugin {
     fn default() -> Self {
         Self {
             resolution: Resolution::default(),
+            mask: AspectRatioMask::default(),
         }
     }
 }
 
 impl Plugin for AspectRatioPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(self.resolution);
+        app.insert_resource(self.resolution)
+            .insert_resource(self.mask);
         plugin(app);
+    }
+}
+
+/// Represents the background color used for the letterboxing "mask" regions
+/// that appear outside the target virtual resolution.
+///
+/// This color fills the black bars (or any custom color you choose)
+/// when the window's aspect ratio doesn't match the desired resolution.
+/// It's used internally by `AspectRatioPlugin` to visually isolate the game area.
+#[derive(Resource, Clone, Copy)]
+pub struct AspectRatioMask {
+    pub color: Color,
+}
+
+impl Default for AspectRatioMask {
+    fn default() -> Self {
+        Self {
+            color: GRAY_950.into(),
+        }
     }
 }
 
@@ -101,7 +123,7 @@ struct AspectRatioHud;
 /// These are spawned automatically as dark overlays ("black bars") to hide
 /// any extra viewport space when the window aspect ratio deviates.
 #[derive(Component)]
-enum AspectRatioMask {
+enum AspectRatioMaskSide {
     Left,
     Right,
     Top,
@@ -118,7 +140,7 @@ pub struct Hud(pub Entity);
 ///
 /// This is automatically invoked via `AspectRatioPlugin`—you generally don't call this yourself.
 fn plugin(app: &mut App) {
-    app.add_systems(Startup, setup);
+    app.add_systems(PreStartup, setup); // PreStartup to register Hud so it can be used in Startup
 
     app.add_systems(
         Update,
@@ -128,8 +150,12 @@ fn plugin(app: &mut App) {
     );
 }
 
-fn setup(mut commands: Commands, resolution: Res<Resolution>) {
-    commands.spawn(aspect_ratio_mask());
+fn setup(
+    mut commands: Commands,
+    resolution: Res<Resolution>,
+    aspect_ration_mask: Res<AspectRatioMask>,
+) {
+    commands.spawn(aspect_ratio_mask_setup(aspect_ration_mask.color));
 
     let hud = commands.spawn(aspect_ratio_hud(resolution)).id();
     let mut base = commands.spawn(aspect_ratio_hud_parent());
@@ -146,7 +172,7 @@ fn aspect_ratio_hud_scaler(
     resolution: Res<Resolution>,
     mut ui_scale: ResMut<UiScale>,
     mut aspect_ratio_hud: Query<&mut Node, With<AspectRatioHud>>,
-    mut masks: Query<(&AspectRatioMask, &mut Node), Without<AspectRatioHud>>,
+    mut masks: Query<(&AspectRatioMaskSide, &mut Node), Without<AspectRatioHud>>,
 ) {
     let scale_x = windows.single().unwrap().resolution.size().x / resolution.width;
     let scale_y = windows.single().unwrap().resolution.size().y / resolution.height;
@@ -176,19 +202,19 @@ fn aspect_ratio_hud_scaler(
 
     for (mask, mut node) in masks.iter_mut() {
         match mask {
-            AspectRatioMask::Left => {
+            AspectRatioMaskSide::Left => {
                 node.width = Val::Px(dx);
                 node.left = Val::Px(-dx / 2.0);
             }
-            AspectRatioMask::Right => {
+            AspectRatioMaskSide::Right => {
                 node.width = Val::Px(dx);
                 node.left = Val::Px(normalized_width - dx / 2.0);
             }
-            AspectRatioMask::Top => {
+            AspectRatioMaskSide::Top => {
                 node.height = Val::Px(dy);
                 node.top = Val::Px(-dy / 2.0);
             }
-            AspectRatioMask::Bottom => {
+            AspectRatioMaskSide::Bottom => {
                 node.height = Val::Px(dy);
                 node.top = Val::Px(normalized_height - dy / 2.0);
             }
@@ -234,12 +260,12 @@ fn aspect_ratio_hud(resolution: Res<Resolution>) -> impl Bundle {
 /// Spawns four masking nodes that surround the viewport to simulate black bars.
 ///
 /// These are automatically sized based on the window and resolution mismatch.
-fn aspect_ratio_mask() -> impl Bundle {
+fn aspect_ratio_mask_setup(color: Color) -> impl Bundle {
     (
         aspect_ratio_hud_parent(),
         children![
             (
-                AspectRatioMask::Left,
+                AspectRatioMaskSide::Left,
                 Name::new("Aspect Ratio Mask"),
                 Node {
                     height: Val::Percent(100.0),
@@ -247,10 +273,10 @@ fn aspect_ratio_mask() -> impl Bundle {
                     position_type: PositionType::Absolute,
                     ..default()
                 },
-                BackgroundColor(GRAY_950.into()),
+                BackgroundColor(color),
             ),
             (
-                AspectRatioMask::Right,
+                AspectRatioMaskSide::Right,
                 Name::new("Aspect Ratio Mask"),
                 Node {
                     height: Val::Percent(100.0),
@@ -258,10 +284,10 @@ fn aspect_ratio_mask() -> impl Bundle {
                     position_type: PositionType::Absolute,
                     ..default()
                 },
-                BackgroundColor(GRAY_950.into()),
+                BackgroundColor(color),
             ),
             (
-                AspectRatioMask::Top,
+                AspectRatioMaskSide::Top,
                 Name::new("Aspect Ratio Mask"),
                 Node {
                     width: Val::Percent(100.0),
@@ -269,10 +295,10 @@ fn aspect_ratio_mask() -> impl Bundle {
                     position_type: PositionType::Absolute,
                     ..default()
                 },
-                BackgroundColor(GRAY_950.into()),
+                BackgroundColor(color),
             ),
             (
-                AspectRatioMask::Bottom,
+                AspectRatioMaskSide::Bottom,
                 Name::new("Aspect Ratio Mask"),
                 Node {
                     width: Val::Percent(100.0),
@@ -280,7 +306,7 @@ fn aspect_ratio_mask() -> impl Bundle {
                     position_type: PositionType::Absolute,
                     ..default()
                 },
-                BackgroundColor(GRAY_950.into()),
+                BackgroundColor(color),
             )
         ],
     )
