@@ -18,9 +18,8 @@ A lightweight Bevy plugin that maintains a fixed virtual resolution across all s
 
 | bevy_aspect_ratio_mask | Bevy Version |
 |-|-|
+| 0.3.0 | 0.17.x |
 | 0.2.0 | 0.16.x |
-
-> This crate currently supports **Bevy 0.16**. Compatibility with future Bevy versions will follow stable releases as needed.
 
 ---
 
@@ -109,7 +108,7 @@ Run the examples: `cargo run --example simple`.
 
 ```rust
 use bevy::{
-    color::palettes::css::ORANGE, prelude::*, render::camera::ScalingMode, window::WindowResolution,
+    camera::ScalingMode, color::palettes::css::ORANGE, prelude::*, window::WindowResolution,
 };
 use bevy_aspect_ratio_mask::{AspectRatioPlugin, Hud, Resolution};
 
@@ -124,8 +123,8 @@ fn main() {
                 title: "Aspect Ratio Mask".into(),
                 name: Some("Aspect Ratio Mask".into()),
                 resolution: WindowResolution::new(
-                    RESOLUTION_WIDTH * 1.3, // Window size doesn't matter here. It can be resized and the aspect ratio is kept with the defined resolution
-                    RESOLUTION_HEIGHT * 1.3,
+                    (RESOLUTION_WIDTH * 1.3) as u32, // Window size doesn't matter here. It can be resized and the aspect ratio is kept with the defined resolution
+                    (RESOLUTION_HEIGHT * 1.3) as u32,
                 ),
                 ..default()
             }),
