@@ -29,7 +29,7 @@ A lightweight Bevy plugin that maintains a fixed virtual resolution across all s
 
 ```toml
 # Cargo.toml
-bevy_aspect_ratio_mask = "0.1"
+bevy_aspect_ratio_mask = "0.3"
 ```
 
 ### 2. Register the plugin
