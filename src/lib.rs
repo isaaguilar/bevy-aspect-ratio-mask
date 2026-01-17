@@ -32,15 +32,13 @@
 //!                 },
 //!             ))
 //!             .with_children(|p| {
-//!                 p.spawn(Text {
-//!                     sections: vec![TextSection::new("Hello", TextStyle::default())],
-//!                     ..default()
-//!                 });
+//!                 p.spawn(Text::new("Hello"));
 //!             });
 //!     });
 //! }
 //! ```
 use bevy::color::palettes::tailwind::GRAY_950;
+use bevy::ecs::schedule::common_conditions::on_message;
 use bevy::prelude::*;
 
 /// A Bevy plugin that enforces a fixed virtual resolution with black bar masking and UI scaling.
@@ -146,7 +144,7 @@ fn plugin(app: &mut App) {
         Update,
         aspect_ratio_hud_scaler
             .chain()
-            .run_if(on_event::<bevy::window::WindowResized>),
+            .run_if(on_message::<bevy::window::WindowResized>),
     );
 }
 
