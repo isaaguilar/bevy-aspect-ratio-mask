@@ -18,6 +18,7 @@ A lightweight Bevy plugin that maintains a fixed virtual resolution across all s
 
 | bevy_aspect_ratio_mask | Bevy Version |
 |-|-|
+| 0.5.0 | 0.19.x |
 | 0.4.0 | 0.18.x |
 | 0.3.0 | 0.17.x |
 | 0.2.0 | 0.16.x |
@@ -30,7 +31,7 @@ A lightweight Bevy plugin that maintains a fixed virtual resolution across all s
 
 ```toml
 # Cargo.toml
-bevy_aspect_ratio_mask = "0.4"
+bevy_aspect_ratio_mask = "0.5"
 ```
 
 ### 2. Register the plugin
@@ -59,7 +60,7 @@ use bevy_aspect_ratio_mask::{AspectRatioMask, AspectRatioPlugin, Resolution};
 })
 ```
 
-### 3. Add your own Camera2dBundle
+### 3. Add your own Camera2d
 
 > Required for proper scaling behavior
 
@@ -218,4 +219,3 @@ Scales UI and game visuals using Bevy’s UiScale and position margins
 ## Questions / Contributing
 
 Open an issue, submit a PR, or start a discussion! Feedback and improvements welcome.
-

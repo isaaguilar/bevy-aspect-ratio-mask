@@ -1,13 +1,13 @@
 //! A Bevy plugin that enforces a fixed virtual resolution with dynamic letterboxing and UI scaling.
 //!
 //! Add `AspectRatioPlugin` to your app, and use the injected `Hud` resource to spawn your UI.
-//! Requires a `Camera2dBundle` with `ScalingMode::AutoMin`.
+//! Requires a `Camera2d` with `ScalingMode::AutoMin`.
 //!
 //! ---
 //!
 //! ### Example
 //!
-//! ```rust
+//! ```rust,no_run
 //! use bevy::prelude::*;
 //! use bevy_aspect_ratio_mask::{AspectRatioPlugin, Hud};
 //!
