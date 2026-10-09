@@ -18,6 +18,7 @@ A lightweight Bevy plugin that maintains a fixed virtual resolution across all s
 
 | bevy_aspect_ratio_mask | Bevy Version |
 |-|-|
+| 0.6.0 | 0.20.x |
 | 0.5.0 | 0.19.x |
 | 0.4.0 | 0.18.x |
 | 0.3.0 | 0.17.x |
@@ -31,7 +32,7 @@ A lightweight Bevy plugin that maintains a fixed virtual resolution across all s
 
 ```toml
 # Cargo.toml
-bevy_aspect_ratio_mask = "0.5"
+bevy_aspect_ratio_mask = "0.6"
 ```
 
 ### 2. Register the plugin
